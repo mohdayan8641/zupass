@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool } from "@src/database/postgresPool";
 import { logger } from "../../util/logger";
 import { sqlQuery } from "../sqlQuery";
 

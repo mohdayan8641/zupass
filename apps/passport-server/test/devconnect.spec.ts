@@ -8,11 +8,11 @@ import { ArgumentTypeName, SerializedPCD } from "@pcd/pcd-types";
 import { RSAPCDPackage } from "@pcd/rsa-pcd";
 import { RSATicketPCD, RSATicketPCDPackage } from "@pcd/rsa-ticket-pcd";
 import { Identity } from "@semaphore-protocol/identity";
+import { Pool } from "@src/database/postgresPool";
 import { expect } from "chai";
 import _ from "lodash";
 import "mocha";
 import NodeRSA from "node-rsa";
-import { Pool } from "pg";
 import {
   DevconnectPretixConfig,
   getDevconnectPretixConfig

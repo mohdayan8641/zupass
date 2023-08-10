@@ -1,4 +1,5 @@
-import { Pool, QueryResultRow } from "pg";
+import { Pool } from "@src/database/postgresPool";
+import { QueryResultRow } from "pg";
 import { HistoricSemaphoreGroup } from "../models";
 import { sqlQuery } from "../sqlQuery";
 
