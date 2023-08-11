@@ -160,22 +160,6 @@ export class DevconnectPretixDataMocker {
     org.settingsByEventID.set(eventID, settings);
   }
 
-  public updateItem(
-    orgUrl: string,
-    eventID: string,
-    itemId: number,
-    update: (order: DevconnectPretixItem) => void
-  ): void {
-    const org = this.mockData.organizersByOrgUrl.get(orgUrl);
-    if (!org) throw new Error(`missing org ${orgUrl}`);
-    const eventItems = org.itemsByEventID.get(eventID) ?? [];
-    const item = eventItems.find((item) => item.id === itemId);
-    if (!item) {
-      throw new Error(`couldn't find item ${itemId} for event ${eventID}`);
-    }
-    update(item);
-  }
-
   private newMockData(): IMockDevconnectPretixData {
     const organizer1 = this.newOrganizer();
     const organizer2 = this.newOrganizer();
