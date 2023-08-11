@@ -16,7 +16,7 @@ import { expect } from "chai";
 import _ from "lodash";
 import "mocha";
 import NodeRSA from "node-rsa";
-import { Pool } from "pg";
+import { Pool } from "postgres-pool";
 import {
   DevconnectPretixConfig,
   getDevconnectPretixConfig
