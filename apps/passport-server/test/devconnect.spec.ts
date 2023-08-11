@@ -520,6 +520,24 @@ describe("devconnect functionality", function () {
     }
   );
 
+  step("should not be able to sync if an event is missing", async function () {
+    mocker.failEvent(
+      mocker.get().organizer1.orgUrl,
+      mocker.get().organizer1.eventA.slug
+    );
+
+    devconnectPretixSyncService.replaceApi(
+      getDevconnectMockPretixAPI(mocker.get())
+    );
+    await devconnectPretixSyncService.trySync();
+    expect(
+      devconnectPretixSyncService.hasCompletedSyncSinceStarting
+    ).to.be.false;
+    // stop interval that polls the api so we have more granular control over
+    // testing the sync functionality
+    application.services.pretixSyncService?.stop();
+  });
+
   let user: User;
   let identity: Identity;
   let publicKey: NodeRSA;

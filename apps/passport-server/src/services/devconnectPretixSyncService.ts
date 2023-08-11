@@ -59,6 +59,8 @@ export class DevconnectPretixSyncService {
   private timeout: NodeJS.Timeout | undefined;
   private _hasCompletedSyncSinceStarting: boolean;
 
+  // Log of activity in the most recent sync
+
   public get hasCompletedSyncSinceStarting(): boolean {
     return this._hasCompletedSyncSinceStarting;
   }

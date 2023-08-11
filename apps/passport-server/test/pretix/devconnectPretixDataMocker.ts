@@ -46,6 +46,8 @@ export interface IOrganizer {
   EMAIL_2: string;
   EMAIL_3: string;
   EMAIL_4: string;
+
+  failingEventIDs: Set<string>;
 }
 
 export class DevconnectPretixDataMocker {
@@ -150,6 +152,12 @@ export class DevconnectPretixDataMocker {
     return org.settingsByEventID.get(eventID) as DevconnectPretixEventSettings;
   }
 
+  public failEvent(orgUrl: string, eventID: string): void {
+    const org = this.mockData.organizersByOrgUrl.get(orgUrl);
+    if (!org) throw new Error(`missing org ${orgUrl}`);
+    org.failingEventIDs.add(eventID);
+  }
+
   public setEventSettings(
     orgUrl: string,
     eventID: string,
@@ -242,6 +250,8 @@ export class DevconnectPretixDataMocker {
     settingsByEventID.set(eventB.slug, eventBSettings);
     settingsByEventID.set(eventC.slug, eventCSettings);
 
+    const failingEventIDs: Set<string> = new Set();
+
     return {
       orgUrl,
       token,
@@ -261,7 +271,8 @@ export class DevconnectPretixDataMocker {
       EMAIL_1,
       EMAIL_2,
       EMAIL_3,
-      EMAIL_4
+      EMAIL_4,
+      failingEventIDs
     };
   }
 

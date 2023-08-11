@@ -32,7 +32,14 @@ export function getDevconnectMockPretixAPI(
       if (!org) throw new Error(`missing org ${orgUrl}`);
       if (org.token !== token)
         throw new Error(`incorrect token ${token} for org ${orgUrl}`);
-      return [...org.eventByEventID.values()];
+
+      const events: DevconnectPretixEvent[] = [];
+      for (const eventID in org.eventByEventID.keys()) {
+        if (!org.failingEventIDs.has(eventID)) {
+          events.push(org.eventByEventID.get(eventID) as DevconnectPretixEvent);
+        }
+      }
+      return events;
     },
     fetchEvent: async (
       orgUrl: string,
@@ -41,6 +48,9 @@ export function getDevconnectMockPretixAPI(
     ): Promise<DevconnectPretixEvent> => {
       const org = mockData.organizersByOrgUrl.get(orgUrl);
       if (!org) throw new Error(`missing org ${orgUrl}`);
+      if (org.failingEventIDs.has(eventID)) {
+        throw new Error("Enforced failure");
+      }
       if (org.token !== token)
         throw new Error(`incorrect token ${token} for org ${orgUrl}`);
       const event = org.eventByEventID.get(eventID);
