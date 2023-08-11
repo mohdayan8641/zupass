@@ -99,6 +99,31 @@ export class DevconnectPretixDataMocker {
     org.ordersByEventID.set(eventID, eventOrders);
   }
 
+  public updateItem(
+    orgUrl: string,
+    eventID: string,
+    itemId: number,
+    update: (item: DevconnectPretixItem) => void
+  ): void {
+    const org = this.mockData.organizersByOrgUrl.get(orgUrl);
+    if (!org) throw new Error(`missing org ${orgUrl}`);
+    const eventItems = org.itemsByEventID.get(eventID) ?? [];
+    const item = eventItems.find((item) => item.id === itemId);
+    if (!item) {
+      throw new Error(`Could not find item {$itemId} for event ${eventID}`);
+    }
+
+    update(item);
+  }
+
+  public removeItem(orgUrl: string, eventID: string, itemId: number): void {
+    const org = this.mockData.organizersByOrgUrl.get(orgUrl);
+    if (!org) throw new Error(`missing org ${orgUrl}`);
+    const eventItems = org.itemsByEventID.get(eventID) ?? [];
+    const items = eventItems.filter((item) => item.id !== itemId);
+    org.itemsByEventID.set(eventID, items);
+  }
+
   public updateEvent(
     orgUrl: string,
     eventID: string,

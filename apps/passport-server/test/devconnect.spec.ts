@@ -6,7 +6,11 @@ import {
 } from "@pcd/passport-interface";
 import { ArgumentTypeName, SerializedPCD } from "@pcd/pcd-types";
 import { RSAPCDPackage } from "@pcd/rsa-pcd";
-import { RSATicketPCD, RSATicketPCDPackage } from "@pcd/rsa-ticket-pcd";
+import {
+  ITicketData,
+  RSATicketPCD,
+  RSATicketPCDPackage
+} from "@pcd/rsa-ticket-pcd";
 import { Identity } from "@semaphore-protocol/identity";
 import { expect } from "chai";
 import _ from "lodash";
@@ -619,6 +623,96 @@ describe("devconnect functionality", function () {
     pcds1.forEach((_, i) => {
       expect(pcds1[i].id).to.eq(pcds2[i].id);
     });
+  });
+
+  /**
+   * This test updates an event, runs a pretix sync, then fetches the
+   * affected PCD to see if the new event name is reflected there.
+   */
+  step("should see event updates reflected in PCDs", async function () {
+    const updatedName = "New name";
+
+    mocker.updateEvent(
+      mocker.get().organizer1.orgUrl,
+      mocker.get().organizer1.eventA.slug,
+      (event) => {
+        event.name.en = updatedName;
+      }
+    );
+
+    mocker.setEventSettings(
+      mocker.get().organizer1.orgUrl,
+      mocker.get().organizer1.eventA.slug,
+      { attendee_emails_asked: true, attendee_emails_required: true }
+    );
+
+    await devconnectPretixSyncService.trySync();
+
+    const response = await requestIssuedPCDs(
+      application,
+      identity,
+      ISSUANCE_STRING
+    );
+    const responseBody = response.body as IssuedPCDsResponse;
+
+    expect(responseBody.folder).to.eq("Devconnect");
+
+    expect(Array.isArray(responseBody.pcds)).to.eq(true);
+    const ticketPCD = responseBody.pcds[0];
+    expect(ticketPCD.type).to.eq(RSATicketPCDPackage.name);
+
+    const deserializedEmailPCD = await RSATicketPCDPackage.deserialize(
+      ticketPCD.pcd
+    );
+
+    const ticketData = JSON.parse(
+      deserializedEmailPCD?.proof?.rsaPCD?.claim?.message ?? "{}"
+    ) as ITicketData;
+
+    expect(ticketData.eventName).to.eq(updatedName);
+  });
+
+  /**
+   * This test updates a product, runs a pretix sync, then fetches the
+   * affected PCD to see if the new product name is reflected there.
+   */
+  step("should see product updates reflected in PCDs", async function () {
+    const updatedName = "New product name";
+
+    mocker.updateItem(
+      mocker.get().organizer1.orgUrl,
+      mocker.get().organizer1.eventA.slug,
+      mocker.get().organizer1.eventAItem1.id,
+      (item) => {
+        item.name.en = updatedName;
+      }
+    );
+
+    await devconnectPretixSyncService.trySync();
+
+    const response = await requestIssuedPCDs(
+      application,
+      identity,
+      ISSUANCE_STRING
+    );
+    const responseBody = response.body as IssuedPCDsResponse;
+
+    expect(responseBody.folder).to.eq("Devconnect");
+
+    expect(Array.isArray(responseBody.pcds)).to.eq(true);
+    const ticketPCD = responseBody.pcds[0];
+    expect(ticketPCD.type).to.eq(RSATicketPCDPackage.name);
+
+    const deserializedEmailPCD = await RSATicketPCDPackage.deserialize(
+      ticketPCD.pcd
+    );
+
+    const ticketData = JSON.parse(
+      deserializedEmailPCD?.proof?.rsaPCD?.claim?.message ?? "{}"
+    ) as ITicketData;
+
+    // "Ticket name" is equivalent to item/product name
+    expect(ticketData.ticketName).to.eq(updatedName);
   });
 
   let checkerUser: User;
