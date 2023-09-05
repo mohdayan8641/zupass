@@ -11,6 +11,10 @@ export type FetchFn = (
 ) => Promise<Response>;
 
 export interface IDevconnectPretixAPI {
+  fetchOrganizer(
+    orgUrl: string,
+    token: string
+  ): Promise<DevconnectPretixOrganizer>;
   fetchOrders(
     orgUrl: string,
     token: string,
@@ -123,6 +127,25 @@ export class DevconnectPretixAPI implements IDevconnectPretixAPI {
   public cancelPendingRequests(): void {
     this.cancelController.abort();
     this.cancelController = this.newCancelController();
+  }
+
+  public async fetchOrganizer(
+    orgUrl: string,
+    token: string
+  ): Promise<DevconnectPretixOrganizer> {
+    return traced(TRACE_SERVICE, "fetchOrganizer", async (span) => {
+      span?.setAttribute("org_url", orgUrl);
+      logger(`[DEVCONNECT PRETIX] Fetching organizer: ${orgUrl}`);
+      const res = await this.queuedFetch(orgUrl, {
+        headers: { Authorization: `Token ${token}` }
+      });
+      if (!res.ok) {
+        throw new Error(
+          `[PRETIX] Error fetching ${orgUrl}: ${res.status} ${res.statusText}`
+        );
+      }
+      return res.json();
+    });
   }
 
   public async fetchAllEvents(
@@ -340,6 +363,13 @@ export type DevconnectPretixI18nMap = { [lang: string]: string };
  */
 export function getI18nString(map: DevconnectPretixI18nMap): string {
   return map["en"] ?? Object.values(map)[0];
+}
+
+// A pretix organizer, as represented by the Pretix backend
+export interface DevconnectPretixOrganizer {
+  name: string;
+  slug: string;
+  public_url: string;
 }
 
 // A Pretix order. For our purposes, each order contains one ticket.
