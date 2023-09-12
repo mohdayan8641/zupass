@@ -14,6 +14,7 @@ import { EmailTokenService } from "./services/emailTokenService";
 import { IssuanceService } from "./services/issuanceService";
 import { MetricsService } from "./services/metricsService";
 import { PersistentCacheService } from "./services/persistentCacheService";
+import { PluginService } from "./services/pluginService";
 import { PretixSyncService } from "./services/pretixSyncService";
 import { ProvingService } from "./services/provingService";
 import { RollbarService } from "./services/rollbarService";
@@ -46,6 +47,7 @@ export interface GlobalServices {
   discordService: DiscordService | null;
   telegramService: TelegramService | null;
   persistentCacheService: PersistentCacheService;
+  pluginService: PluginService;
 }
 
 export interface PCDpass {

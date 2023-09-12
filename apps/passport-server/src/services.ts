@@ -6,6 +6,7 @@ import { startEmailTokenService } from "./services/emailTokenService";
 import { startIssuanceService } from "./services/issuanceService";
 import { startMetricsService } from "./services/metricsService";
 import { startPersistentCacheService } from "./services/persistentCacheService";
+import { startPluginService } from "./services/pluginService";
 import { startPretixSyncService } from "./services/pretixSyncService";
 import { startProvingService } from "./services/provingService";
 import { startRollbarService } from "./services/rollbarService";
@@ -61,6 +62,8 @@ export async function startServices(
     persistentCacheService,
     rollbarService
   );
+  const pluginService = await startPluginService(context, rollbarService);
+
   const services: GlobalServices = {
     semaphoreService,
     userService,
@@ -74,7 +77,8 @@ export async function startServices(
     issuanceService,
     discordService,
     telegramService,
-    persistentCacheService
+    persistentCacheService,
+    pluginService
   };
   return services;
 }
@@ -87,4 +91,5 @@ export async function stopServices(services: GlobalServices): Promise<void> {
   services.telegramService?.stop();
   services.persistentCacheService.stop();
   await services.discordService?.stop();
+  await services.pluginService.stop();
 }
