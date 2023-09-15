@@ -2,6 +2,7 @@ import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfil
 import { NodeModulesPolyfillPlugin } from "@esbuild-plugins/node-modules-polyfill";
 import { build, BuildOptions, context } from "esbuild";
 import fs from "fs";
+import http from "node:http";
 
 const consumerClientAppOpts: BuildOptions = {
   sourcemap: true,
@@ -44,11 +45,43 @@ async function run(command: string) {
 
       const options = {
         host: "0.0.0.0",
-        port: 3001,
+        port: 3005,
         servedir: "public"
       };
 
       const { host, port } = await ctx.serve(options);
+      const proxyPort = 3001;
+
+      const proxy = http.createServer((req, res) => {
+        // forwardRequest forwards an http request through to esbuid.
+        const forwardRequest = (path) => {
+          const options = {
+            hostname: host,
+            port,
+            path,
+            method: req.method,
+            headers: req.headers
+          };
+
+          const proxyReq = http.request(options, (proxyRes) => {
+            if (proxyRes.statusCode === 404) {
+              // If esbuild 404s the request, assume it's a route needing to
+              // be handled by the JS bundle, so forward a second attempt to `/`.
+              return forwardRequest("/");
+            }
+
+            res.writeHead(proxyRes.statusCode, proxyRes.headers);
+            proxyRes.pipe(res, { end: true });
+          });
+
+          req.pipe(proxyReq, { end: true });
+        };
+
+        // When we're called pass the request right through to esbuild.
+        forwardRequest(req.url);
+      });
+
+      proxy.listen(proxyPort);
 
       console.log(`Serving consumer client on http://${host}:${port}`);
       break;

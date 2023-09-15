@@ -138,7 +138,7 @@ function requestMembershipProof(
   proveOnServer: boolean,
   originalSiteName: string
 ) {
-  const popupUrl = window.location.origin + "#/popup";
+  const popupUrl = window.location.origin + "/popup";
   const proofUrl = constructPassportPcdGetRequestUrl<
     typeof SemaphoreGroupPCDPackage
   >(
