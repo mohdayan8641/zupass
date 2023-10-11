@@ -6,9 +6,9 @@ import {
 import {
   EdDSATicketPCD,
   EdDSATicketPCDPackage,
+  getEdDSATicketData,
   ITicketData,
-  TicketCategory,
-  getEdDSATicketData
+  TicketCategory
 } from "@pcd/eddsa-ticket-pcd";
 import { EmailPCD, EmailPCDPackage } from "@pcd/email-pcd";
 import { getHash } from "@pcd/passport-crypto";
@@ -31,21 +31,21 @@ import {
   ListSingleFeedRequest,
   PollFeedRequest,
   PollFeedResponseValue,
+  verifyFeedCredential,
   VerifyTicketRequest,
   VerifyTicketResult,
   ZupassFeedIds,
-  ZuzaluUserRole,
-  verifyFeedCredential
+  ZuzaluUserRole
 } from "@pcd/passport-interface";
 import {
   AppendToFolderAction,
   AppendToFolderPermission,
+  joinPath,
   PCDAction,
   PCDActionType,
   PCDPermissionType,
   ReplaceInFolderAction,
-  ReplaceInFolderPermission,
-  joinPath
+  ReplaceInFolderPermission
 } from "@pcd/pcd-collection";
 import { ArgumentTypeName, SerializedPCD } from "@pcd/pcd-types";
 import { RSAImagePCDPackage } from "@pcd/rsa-image-pcd";
@@ -1141,7 +1141,7 @@ export class IssuanceService {
     serializedPCD: SerializedPCD<SemaphoreSignaturePCD>
   ): Promise<boolean> {
     const key = JSON.stringify(serializedPCD);
-    const cached = this.verificationPromiseCache.get(key);
+    const cached = undefined; //this.verificationPromiseCache.get(key);
     if (cached) {
       return cached;
     } else {
