@@ -75,6 +75,17 @@ class App extends React.Component<object, AppState> {
   lastBackgroundPoll = 0;
   activePollTimout: NodeJS.Timeout | undefined = undefined;
 
+  // If the extension is installed, set up the devTools object
+  devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__
+    ? (window as any).__REDUX_DEVTOOLS_EXTENSION__.connect({
+        serialize: {
+          replacer: function (_key, value: any) {
+            return typeof value === "bigint" ? value.toString() : value;
+          }
+        }
+      })
+    : null;
+
   stateEmitter: StateEmitter = new Emitter();
   update = (diff: Pick<AppState, keyof AppState>) => {
     this.setState(diff, () => {
@@ -82,14 +93,22 @@ class App extends React.Component<object, AppState> {
     });
   };
 
-  dispatch = (action: Action) => dispatch(action, this.state, this.update);
+  dispatch = (action: Action) => {
+    const result = dispatch(action, this.state, this.update);
+    // Tell devTools about the state post-action
+    this.devTools?.send(action, this.state);
+    return result;
+  };
+
   componentDidMount() {
     loadInitialState().then((s) => this.setState(s, this.startBackgroundJobs));
+    this.devTools.init(this.state);
     setupBroadcastChannel(this.dispatch);
     setupUsingLaserScanning();
   }
   componentWillUnmount(): void {
     closeBroadcastChannel();
+    this.devTools.disconnect();
   }
   stateContextState: StateContextValue = {
     getState: () => this.state,
